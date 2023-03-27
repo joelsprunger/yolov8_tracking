@@ -146,10 +146,7 @@ def run(
     outputs = [{}] * bs
     detected_items: UserDict[UserDict] = {names[c]: {} for c in filter_classes}
     item_counts: UserDict[int] = {names[c]: 0 for c in filter_classes}
-    persons = {}
-    bicycles = {}
-    person_count = 0
-    bicycle_count = 0
+
     # Run tracking
     #model.warmup(imgsz=(1 if pt else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], (Profile(), Profile(), Profile(), Profile())
@@ -253,14 +250,6 @@ def run(
                                 if id not in detected_items[names[int(cls)]].keys():
                                     item_counts[key] += 1
                                     detected_items[key][id] = item_counts[key]
-                                if cls == 1:  # bicycles
-                                    if id not in bicycles.keys():
-                                        bicycle_count += 1
-                                        bicycles[id] = bicycle_count
-                                if cls == 0:  # persons
-                                    if id not in persons.keys():
-                                        person_count += 1
-                                        persons[id] = person_count
 
                                 if save_txt:
                                     # to MOT format
@@ -332,7 +321,7 @@ def run(
         LOGGER.info(f"Results saved to {colorstr('bold', save_dir)}{s}")
     if update:
         strip_optimizer(yolo_weights)  # update model (to fix SourceChangeWarning)
-    print(f"Total people: {person_count-bicycle_count}, total bicycles {bicycle_count}")
+    print(f"Total people: {item_counts['person']-item_counts['bicycle']}, total bicycles {item_counts['bicycle']}")
 
 def parse_opt():
     parser = argparse.ArgumentParser()
